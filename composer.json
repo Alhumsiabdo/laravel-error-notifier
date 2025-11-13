@@ -1,5 +1,5 @@
 {
-  "name": "alhumsibsaido/laravel-error-notifier",
+  "name": "alhumsi/laravel-error-notifier",
   "description": "Laravel package for actionable error notifications and auto actions",
   "type": "library",
   "license": "MIT",
@@ -8,7 +8,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Alhumsibsaido\\ErrorNotifier\\": "src/"
+      "alhumsi\\ErrorNotifier\\": "src/"
     }
   },
   "require": {
@@ -17,7 +17,7 @@
   },
   "extra": {
     "laravel": {
-      "providers": ["Alhumsibsaido\\ErrorNotifier\\ErrorNotifierServiceProvider"]
+      "providers": ["alhumsi\\ErrorNotifier\\ErrorNotifierServiceProvider"]
     }
   }
 }
