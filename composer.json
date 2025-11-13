@@ -1,0 +1,23 @@
+{
+  "name": "alhumsibsaido/laravel-error-notifier",
+  "description": "Laravel package for actionable error notifications and auto actions",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    { "name": "Abdullah ALhumsi", "email": "abdullah.alhumsi9@gmail.com" }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Alhumsibsaido\\ErrorNotifier\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=8.1",
+    "illuminate/support": "^10.0|^11.0"
+  },
+  "extra": {
+    "laravel": {
+      "providers": ["Alhumsibsaido\\ErrorNotifier\\ErrorNotifierServiceProvider"]
+    }
+  }
+}
