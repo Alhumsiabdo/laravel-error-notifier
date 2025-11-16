@@ -2,9 +2,9 @@
 
 namespace alhumsi\ErrorNotifier;
 
+use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
 use alhumsi\ErrorNotifier\Listeners\ExceptionListener;
-use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface; // <-- NEW: Import the Interface
-use alhumsi\ErrorNotifier\Analyzer; // <-- NEW: Import the concrete Analyzer class
+use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
 
@@ -14,15 +14,17 @@ class ErrorNotifierServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/error-notifier.php', 'error-notifier');
 
-        // 1. BIND THE ANALYZER INTERFACE TO THE CONCRETE ANALYZER CLASS (Fixes the instantiable error)
+        // 1. Bind the concrete Analyzer class
         $this->app->bind(AnalyzerInterface::class, Analyzer::class);
 
-        // 2. BIND THE LISTENER (Ensures the constructor dependencies are handled)
-        // We use singleton because we only need one listener instance.
+        // 2. Bind the concrete Formatter class
+        $this->app->bind(MessageFormatterInterface::class, MessageFormatter::class);
+
+        // 3. FIX: When creating the Listener, pass both required dependencies
         $this->app->singleton(ExceptionListener::class, function ($app) {
-            // Laravel resolves AnalyzerInterface when the Listener is created
             return new ExceptionListener(
-                $app->make(AnalyzerInterface::class)
+                $app->make(AnalyzerInterface::class),      // Argument 1
+                $app->make(MessageFormatterInterface::class) // Argument 2 (The missing one!)
             );
         });
     }
@@ -35,7 +37,6 @@ class ErrorNotifierServiceProvider extends ServiceProvider
 
         $this->app->make(\Illuminate\Contracts\Debug\ExceptionHandler::class)->reportable(function (\Throwable $e) {
 
-            // The listener is now resolved from the container, getting its dependencies automatically.
             $listener = $this->app->make(ExceptionListener::class);
             $listener->handle($e);
         });

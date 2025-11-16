@@ -3,24 +3,26 @@
 namespace alhumsi\ErrorNotifier\Listeners;
 
 use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
+use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
 use Throwable;
 
 class ExceptionListener
 {
     protected AnalyzerInterface $analyzer;
+    protected MessageFormatterInterface $formatter;
 
-    public function __construct(AnalyzerInterface $analyzer)
+    public function __construct(AnalyzerInterface $analyzer, MessageFormatterInterface $formatter)
     {
         $this->analyzer = $analyzer;
+        $this->formatter = $formatter;
     }
 
     public function handle(Throwable $e): void
     {
+        // This line now works because $formatter is declared above.
         $report = $this->analyzer->analyze($e);
+        $payload = $this->formatter->format($report, 'slack');
 
-        // For now, let's dump the analysis to confirm it works (temporary)
-        dd($report);
-
-        // Next task (Task 4) will use this $report to format and send a notification.
+        dd($payload);
     }
 }
