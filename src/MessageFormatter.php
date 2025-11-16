@@ -3,6 +3,9 @@
 namespace alhumsi\ErrorNotifier;
 
 use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
+use InvalidArgumentException;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Carbon;
 
 class MessageFormatter implements MessageFormatterInterface
 {
@@ -14,7 +17,8 @@ class MessageFormatter implements MessageFormatterInterface
         return match ($channel) {
             'slack' => $this->formatForSlack($markdown, $report),
             'telegram' => $this->formatForTelegram($markdown, $report),
-            default => throw new \InvalidArgumentException("Unsupported channel: {$channel}"),
+            'discord' => $this->formatForDiscord($markdown, $report),
+            default => throw new InvalidArgumentException("Unsupported channel: {$channel}"),
         };
     }
 
@@ -22,30 +26,69 @@ class MessageFormatter implements MessageFormatterInterface
     {
         $level = strtoupper($report['level'] ?? 'UNKNOWN');
         $type = $report['type'] ?? 'General Error';
-        $summary = $report['summary'] ?? 'No summary available.';
-        $suggestion = $report['suggestion'] ?? 'No specific suggestion provided.';
-        $timestamp = now()->toDateTimeString();
-        $env = app()->environment();
 
+        // Escape summary and suggestion before embedding them
+        $summary = $this->escapeMarkdown($report['summary'] ?? 'No summary available.');
+        $suggestion = $this->escapeMarkdown($report['suggestion'] ?? 'No specific suggestion provided.');
+
+        $timestamp = Carbon::now()->toDateTimeString();
+        $env = App::environment();
+
+        // FIX: Replaced list markers from '-' to '•' to avoid Telegram MarkdownV2 reserved character issue.
         $template = "🚨 *{$level}* — {$type}\n\n" .
             "*Summary:* {$summary}\n" .
             "*Context:*\n" .
-            "- *Env:* `{$env}`\n" .
-            "- *Time:* `{$timestamp}`\n" .
-            "- *Suggestion:* {$suggestion}";
+            "• *Env:* `{$env}`\n" .
+            "• *Time:* `{$timestamp}`\n" .
+            "• *Suggestion:* {$suggestion}";
 
-        // Add context details if they exist (simple list for MVP)
+        // Add context details, escaping the JSON payload before wrapping in code block
         if (!empty($report['context'])) {
-            $template .= "\n*Details:* " . json_encode($report['context'], JSON_PRETTY_PRINT);
+            $json_context = json_encode($report['context'], JSON_PRETTY_PRINT);
+
+            // Apply escaping to the JSON block contents
+            $template .= "\n*Details:* \n```json\n" . $this->escapeMarkdown($json_context) . "\n```";
         }
         return $template;
     }
 
-    // Slack requires blocks for rich formatting
+    /**
+     * Escapes special Markdown V2 characters (Telegram) within text strings.
+     */
+    protected function escapeMarkdown(string $text): string
+    {
+        // Characters to escape: _, *, [, ], (, ), ~, `, >, #, +, -, =, |, {, }, ., !
+        // This is necessary for dynamic content (like error messages) that is not part of explicit Markdown syntax.
+        $replacements = [
+            '\\' => '\\\\',
+            '_' => '\\_',
+            '*' => '\\*',
+            '[' => '\\[',
+            ']' => '\\]',
+            '(' => '\\(',
+            ')' => '\\)',
+            '~' => '\\~',
+            '`' => '\\`',
+            '>' => '\\>',
+            '#' => '\\#',
+            '+' => '\\+',
+            '-' => '\\-', // This is necessary for dynamic data containing hyphens
+            '=' => '\\=',
+            '|' => '\\|',
+            '{' => '\\{',
+            '}' => '\\}',
+            '.' => '\\.',
+            '!' => '\\!',
+        ];
+
+        // Apply replacements, ensuring backslashes are handled first
+        return str_replace(array_keys($replacements), array_values($replacements), $text);
+    }
+
     protected function formatForSlack(string $markdown, array $report): array
     {
         return [
-            'text' => $report['summary'], // Fallback text
+            'text' => $report['summary'],
             'blocks' => [
                 [
                     'type' => 'section',
@@ -58,12 +101,18 @@ class MessageFormatter implements MessageFormatterInterface
         ];
     }
 
-    // Telegram often takes the text directly
     protected function formatForTelegram(string $markdown, array $report): array
     {
         return [
             'text' => $markdown,
-            'parse_mode' => 'Markdown',
+            'parse_mode' => 'MarkdownV2', // FIX: Explicitly using MarkdownV2
+        ];
+    }
+
+    protected function formatForDiscord(string $markdown, array $report): array
+    {
+        return [
+            'content' => $markdown,
         ];
     }
 }
