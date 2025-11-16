@@ -24,7 +24,14 @@ class ExceptionListener
     {
         $report = $this->analyzer->analyze($e);
 
-        $channels = ['telegram', 'slack', 'discord'];
+        $level = $report['level'] ?? 'emergency';
+
+        $channels = config("error-notifier.levels.{$level}", []);
+
+        if (empty($channels)) {
+            logger()->info("ErrorNotifier: No channels configured for level '{$level}'. Skipping notification.");
+            return;
+        }
 
         foreach ($channels as $channel) {
             $payload = $this->formatter->format($report, $channel);

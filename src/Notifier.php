@@ -33,10 +33,15 @@ class Notifier implements NotifierInterface
 
     protected function getWebhookUrl(string $channel): ?string
     {
+        $config = config("error-notifier.channels.{$channel}");
+
+        if (!$config) {
+            return null;
+        }
+
         return match ($channel) {
-            'slack' => config('services.slack.webhook_url'),
-            'telegram' => config('services.telegram.bot_url') . '/sendMessage?chat_id=' . config('services.telegram.chat_id'),
-            'discord' => config('services.discord.webhook_url'),
+            'slack', 'discord' => $config['webhook_url'] ?? null,
+            'telegram' => ($config['bot_url'] ?? '') . ($config['bot_token'] ?? '') . '/sendMessage?chat_id=' . ($config['chat_id'] ?? ''),
             default => null,
         };
     }
