@@ -2,23 +2,25 @@
 
 namespace alhumsi\ErrorNotifier\Listeners;
 
+use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
 use Throwable;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 
 class ExceptionListener
 {
-    /**
-     * Handle the exception reported by the Laravel application.
-     * * @param \Throwable $e
-     * @return void
-     */
+    protected AnalyzerInterface $analyzer;
+
+    public function __construct(AnalyzerInterface $analyzer)
+    {
+        $this->analyzer = $analyzer;
+    }
+
     public function handle(Throwable $e): void
     {
-        // For Task 2, we just ensure we can receive the exception.
-        // In the next task (Error Analyzer), we will process it here.
+        $report = $this->analyzer->analyze($e);
 
-        // Log a simple message to confirm the listener is working
-        // You can uncomment the line below for testing purposes:
-        logger()->info('ErrorNotifier: Exception captured successfully.', ['exception' => get_class($e)]);
+        // For now, let's dump the analysis to confirm it works (temporary)
+        dd($report);
+
+        // Next task (Task 4) will use this $report to format and send a notification.
     }
 }
