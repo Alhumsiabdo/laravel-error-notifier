@@ -3,6 +3,7 @@
 namespace alhumsi\ErrorNotifier;
 
 use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
+use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
 use alhumsi\ErrorNotifier\Listeners\ExceptionListener;
 use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
 use Illuminate\Support\ServiceProvider;
@@ -23,10 +24,12 @@ class ErrorNotifierServiceProvider extends ServiceProvider
         // 3. FIX: When creating the Listener, pass both required dependencies
         $this->app->singleton(ExceptionListener::class, function ($app) {
             return new ExceptionListener(
-                $app->make(AnalyzerInterface::class),      // Argument 1
-                $app->make(MessageFormatterInterface::class) // Argument 2 (The missing one!)
+                $app->make(AnalyzerInterface::class),
+                $app->make(MessageFormatterInterface::class),
+                $app->make(NotifierInterface::class)
             );
         });
+        $this->app->bind(NotifierInterface::class, Notifier::class);
     }
 
     public function boot()
