@@ -1,6 +1,6 @@
 <?php
 
-namespace alhumsi\ErrorNotifier\Tests\Integration;
+namespace alhumsi\ErrorNotifier\tests;
 
 use Orchestra\Testbench\TestCase;
 use alhumsi\ErrorNotifier\ErrorNotifierServiceProvider;
