@@ -50,7 +50,7 @@ jobs:
       - name: Install Dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
-          composer update --prefer-dist --no-interaction
+          composer update --prefer-dist --no-interaction --no-progress
 
       - name: Run PHPUnit Tests
         run: vendor/bin/phpunit
