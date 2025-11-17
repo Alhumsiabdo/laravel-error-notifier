@@ -1,0 +1,56 @@
+name: Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Laravel 10 - testbench 8
+          - php: '8.2'
+            laravel: '10.*'
+            testbench: '^8.0'
+          - php: '8.3'
+            laravel: '10.*'
+            testbench: '^8.0'
+          # Laravel 11 - testbench 9
+          - php: '8.2'
+            laravel: '11.*'
+            testbench: '^9.0'
+          - php: '8.3'
+            laravel: '11.*'
+            testbench: '^9.0'
+          # Laravel 12 - testbench 10 (requires minimum versions)
+          - php: '8.2'
+            laravel: '12.24.*'
+            testbench: '^10.6'
+          - php: '8.3'
+            laravel: '12.24.*'
+            testbench: '^10.6'
+
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Clear Composer Cache
+        run: composer clear-cache
+
+      - name: Install Dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction
+
+      - name: Run PHPUnit Tests
+        run: vendor/bin/phpunit
