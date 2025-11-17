@@ -25,6 +25,9 @@ jobs:
           coverage: none # Can be changed to xdebug or pcov later
           tools: composer:v2
 
+      - name: Clear Composer Cache
+        run: composer clear-cache
+
       - name: Install Dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
