@@ -1,6 +1,6 @@
 <?php
 
-namespace alhumsi\ErrorNotifier\tests;
+namespace alhumsi\ErrorNotifier\Tests;
 
 use Orchestra\Testbench\TestCase;
 use alhumsi\ErrorNotifier\ErrorNotifierServiceProvider;
@@ -38,8 +38,7 @@ class ErrorFlowTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function exception_triggers_notifier_for_configured_channels()
+    public function test_exception_triggers_notifier_for_configured_channels()
     {
         // 3. Mock the NotifierInterface
         $mockNotifier = Mockery::mock(NotifierInterface::class);
