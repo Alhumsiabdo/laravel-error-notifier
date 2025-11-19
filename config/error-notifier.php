@@ -57,7 +57,19 @@ return [
      */
     'throttling' => [
         'enabled' => env('ERROR_NOTIFIER_THROTTLE_ENABLED', true),
-        // The default time (in minutes) to silence a repeating error after the first notification.
         'default_cooldown_minutes' => 1,
+    ],
+
+
+    /*
+     * -------------------------------------------------------------------------
+     * Auto Actions Configuration
+     * -------------------------------------------------------------------------
+     * Define automatic protective actions based on error severity.
+     */
+    'auto_actions' => [
+        'maintenance_enabled' => env('ERROR_NOTIFIER_MAINTENANCE_ENABLED', true),
+        'maintenance_cooldown_minutes' => 15,
+        'maintenance_secret' => env('ERROR_NOTIFIER_MAINTENANCE_SECRET'),
     ],
 ];
