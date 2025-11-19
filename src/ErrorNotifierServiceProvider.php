@@ -2,6 +2,9 @@
 
 namespace alhumsi\ErrorNotifier;
 
+use alhumsi\ErrorNotifier\Console\FeatureLockCommand;
+use alhumsi\ErrorNotifier\Http\Middleware\CheckFeatureLock;
+use alhumsi\ErrorNotifier\Services\FeatureLocker;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
 use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
@@ -31,7 +34,8 @@ class ErrorNotifierServiceProvider extends ServiceProvider
                 $app->make(MessageFormatterInterface::class),
                 $app->make(NotifierInterface::class),
                 $app->make(Throttler::class),
-                $app->make(Maintainer::class)
+                $app->make(Maintainer::class),
+                $app->make(FeatureLocker::class)
             );
         });
         $this->app->bind(NotifierInterface::class, Notifier::class);
@@ -46,6 +50,10 @@ class ErrorNotifierServiceProvider extends ServiceProvider
                 $app->make(Cache::class)
             );
         });
+
+        $this->app->singleton(FeatureLocker::class, function ($app) {
+            return new FeatureLocker($app->make(Cache::class));
+        });
     }
 
     public function boot()
@@ -59,5 +67,14 @@ class ErrorNotifierServiceProvider extends ServiceProvider
             $listener = $this->app->make(ExceptionListener::class);
             $listener->handle($e);
         });
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                FeatureLockCommand::class,
+            ]);
+        }
+
+        $router = $this->app->make(\Illuminate\Routing\Router::class);
+        $router->aliasMiddleware('notifier.lock', CheckFeatureLock::class);
     }
 }
