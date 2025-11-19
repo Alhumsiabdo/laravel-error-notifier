@@ -5,6 +5,7 @@ namespace alhumsi\ErrorNotifier\Listeners;
 use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
 use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
 use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
+use alhumsi\ErrorNotifier\Throttler;
 use Throwable;
 
 class ExceptionListener
@@ -12,12 +13,14 @@ class ExceptionListener
     protected AnalyzerInterface $analyzer;
     protected MessageFormatterInterface $formatter;
     protected NotifierInterface $notifier;
+    protected Throttler $throttler;
 
-    public function __construct(AnalyzerInterface $analyzer, MessageFormatterInterface $formatter, NotifierInterface $notifier)
+    public function __construct(AnalyzerInterface $analyzer, MessageFormatterInterface $formatter, NotifierInterface $notifier, Throttler $throttler)
     {
         $this->analyzer = $analyzer;
         $this->formatter = $formatter;
         $this->notifier = $notifier;
+        $this->throttler = $throttler;
     }
 
     public function handle(Throwable $e): void
@@ -25,6 +28,11 @@ class ExceptionListener
         $report = $this->analyzer->analyze($e);
 
         $level = $report['level'] ?? 'emergency';
+
+        if (!$this->throttler->allowed($report)) {
+            logger()->warning("ErrorNotifier: Notification for '{$level}' throttled.");
+            return;
+        }
 
         $channels = config("error-notifier.levels.{$level}", []);
 

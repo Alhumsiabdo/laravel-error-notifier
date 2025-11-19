@@ -2,6 +2,7 @@
 
 namespace alhumsi\ErrorNotifier;
 
+use Illuminate\Contracts\Cache\Repository as Cache;
 use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
 use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
 use alhumsi\ErrorNotifier\Listeners\ExceptionListener;
@@ -26,10 +27,15 @@ class ErrorNotifierServiceProvider extends ServiceProvider
             return new ExceptionListener(
                 $app->make(AnalyzerInterface::class),
                 $app->make(MessageFormatterInterface::class),
-                $app->make(NotifierInterface::class)
+                $app->make(NotifierInterface::class),
+                $app->make(Throttler::class)
             );
         });
         $this->app->bind(NotifierInterface::class, Notifier::class);
+
+        $this->app->singleton(Throttler::class, function ($app) {
+            return new Throttler($app->make(Cache::class));
+        });
     }
 
     public function boot()
