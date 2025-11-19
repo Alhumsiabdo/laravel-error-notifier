@@ -45,7 +45,6 @@ class ErrorFlowTest extends TestCase
         ]);
     }
 
-    /** @test */
     public function exception_triggers_notifier_for_configured_channels()
     {
         // --- BIND ALL 6 DEPENDENCIES (MOCK THE ONES WE DON'T CARE ABOUT) ---
