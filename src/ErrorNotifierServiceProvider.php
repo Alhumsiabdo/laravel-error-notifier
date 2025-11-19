@@ -8,6 +8,8 @@ use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
 use alhumsi\ErrorNotifier\Listeners\ExceptionListener;
 use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
 use Illuminate\Support\ServiceProvider;
+use alhumsi\ErrorNotifier\Services\Maintainer;
+use Illuminate\Contracts\Console\Kernel;
 use Throwable;
 
 class ErrorNotifierServiceProvider extends ServiceProvider
@@ -28,13 +30,21 @@ class ErrorNotifierServiceProvider extends ServiceProvider
                 $app->make(AnalyzerInterface::class),
                 $app->make(MessageFormatterInterface::class),
                 $app->make(NotifierInterface::class),
-                $app->make(Throttler::class)
+                $app->make(Throttler::class),
+                $app->make(Maintainer::class)
             );
         });
         $this->app->bind(NotifierInterface::class, Notifier::class);
 
         $this->app->singleton(Throttler::class, function ($app) {
             return new Throttler($app->make(Cache::class));
+        });
+
+        $this->app->singleton(Maintainer::class, function ($app) {
+            return new Maintainer(
+                $app->make(Kernel::class),
+                $app->make(Cache::class)
+            );
         });
     }
 
