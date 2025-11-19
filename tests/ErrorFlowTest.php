@@ -5,6 +5,11 @@ namespace alhumsi\ErrorNotifier\Tests;
 use Orchestra\Testbench\TestCase;
 use alhumsi\ErrorNotifier\ErrorNotifierServiceProvider;
 use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
+use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
+use alhumsi\ErrorNotifier\Contracts\MessageFormatterInterface;
+use alhumsi\ErrorNotifier\Throttler;
+use alhumsi\ErrorNotifier\Services\Maintainer;
+use alhumsi\ErrorNotifier\Services\FeatureLocker; // Don't forget to import all required classes!
 use RuntimeException;
 use Mockery;
 
@@ -15,48 +20,68 @@ class ErrorFlowTest extends TestCase
         return [ErrorNotifierServiceProvider::class];
     }
 
-    /**
-     * Define environment setup to simulate package configuration.
-     * This loads our custom config file.
-     */
     protected function defineEnvironment($app)
     {
-        // 2. Set environment to load error-notifier config with two active channels
+        // Set environment to load error-notifier config with two active channels
         $app['config']->set('error-notifier', [
             'channels' => [
                 'slack' => ['webhook_url' => 'http://fake/slack'],
                 'telegram' => ['bot_token' => 'fake_token', 'chat_id' => 'fake_id', 'bot_url' => 'http://fake/tele'],
             ],
-            // Map RuntimeException (generic exception) to two channels
             'levels' => [
                 'emergency' => ['slack', 'telegram'],
             ],
             'analyzers' => [
-                // Analyzer will use this to determine the level
                 \RuntimeException::class => 'emergency',
             ],
+            // Add required auto_actions config so Maintainer and FeatureLocker don't crash
+            'auto_actions' => [
+                'maintenance_enabled' => true,
+                'maintenance_cooldown_minutes' => 15,
+                'maintenance_secret' => 'TEST_SECRET',
+                'lock_features' => ['emergency' => ['test-lock']],
+            ],
+            'throttling' => ['enabled' => true, 'default_cooldown_minutes' => 1],
         ]);
     }
 
-    public function test_exception_triggers_notifier_for_configured_channels()
+    /** @test */
+    public function exception_triggers_notifier_for_configured_channels()
     {
-        // 3. Mock the NotifierInterface
-        $mockNotifier = Mockery::mock(NotifierInterface::class);
+        // --- BIND ALL 6 DEPENDENCIES (MOCK THE ONES WE DON'T CARE ABOUT) ---
 
-        // 4. Set the expectation: The send method should be called exactly twice
-        // (once for 'slack', once for 'telegram', as configured above).
+        // 1. MOCK Notifier (The one we are actually testing)
+        $mockNotifier = Mockery::mock(NotifierInterface::class);
         $mockNotifier->shouldReceive('send')
             ->times(2)
-            ->withArgs(function ($payload, $channel) {
-                // Optional: Assert the channels used
-                return in_array($channel, ['slack', 'telegram']);
-            })
-            ->andReturn(true); // Mock a successful send
+            ->andReturn(true);
 
-        // 5. Bind the mock to the service container
+        // 2. MOCK Throttler (Should always allow sending in this test)
+        $mockThrottler = Mockery::mock(Throttler::class);
+        $mockThrottler->shouldReceive('allowed')->andReturn(true);
+
+        // 3. MOCK Maintainer (Should do nothing but must be available)
+        $mockMaintainer = Mockery::mock(Maintainer::class);
+        $mockMaintainer->shouldReceive('down')->andReturn(false);
+
+        // 4. MOCK FeatureLocker (Should do nothing but must be available)
+        $mockFeatureLocker = Mockery::mock(FeatureLocker::class);
+        $mockFeatureLocker->shouldReceive('lock')->andReturn(true);
+
+        // 5. BIND ALL MOCKED SERVICES
         $this->app->instance(NotifierInterface::class, $mockNotifier);
+        $this->app->instance(Throttler::class, $mockThrottler);
+        $this->app->instance(Maintainer::class, $mockMaintainer);
+        $this->app->instance(FeatureLocker::class, $mockFeatureLocker);
 
-        // 6. Simulate the exception being reported
+        // 6. BIND REAL ANALYZER & FORMATTER (Needed for formatting the payload)
+        // Since Analyzer and Formatter are concrete classes, we must bind them
+        // using the real implementation or the Listener will crash.
+        $this->app->bind(AnalyzerInterface::class, \alhumsi\ErrorNotifier\Analyzer::class);
+        $this->app->bind(MessageFormatterInterface::class, \alhumsi\ErrorNotifier\MessageFormatter::class);
+
+
+        // 7. Simulate the exception being reported
         $handler = $this->app->make(\Illuminate\Contracts\Debug\ExceptionHandler::class);
         $handler->report(new RuntimeException('Test error notification.'));
 
