@@ -11,6 +11,7 @@ use alhumsi\ErrorNotifier\Throttler;
 use alhumsi\ErrorNotifier\Services\Maintainer;
 use alhumsi\ErrorNotifier\Services\FeatureLocker;
 use RuntimeException;
+use PHPUnit\Framework\Attributes\Test;
 use Mockery;
 
 class ErrorFlowTest extends TestCase
@@ -45,7 +46,7 @@ class ErrorFlowTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function exception_triggers_notifier_for_configured_channels()
     {
         // --- BIND ALL 6 DEPENDENCIES (MOCK THE ONES WE DON'T CARE ABOUT) ---
