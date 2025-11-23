@@ -5,7 +5,6 @@ return [
      * -------------------------------------------------------------------------
      * Channels & Configuration
      * -------------------------------------------------------------------------
-     * Define the channels to use and their connection details.
      */
     'channels' => [
         'slack' => [
@@ -25,7 +24,6 @@ return [
      * -------------------------------------------------------------------------
      * Default Notification Channels & Severities
      * -------------------------------------------------------------------------
-     * Define the default channels to be notified for each severity level.
      */
     'levels' => [
         'emergency' => ['slack', 'telegram', 'discord'],
@@ -39,21 +37,21 @@ return [
      * -------------------------------------------------------------------------
      * Analyzer Mapping
      * -------------------------------------------------------------------------
-     * Map specific exception classes to a package level (e.g., 'critical')
      */
     'analyzers' => [
-        \Illuminate\Database\QueryException::class => 'critical',
+        // Ensure high-risk items trigger the EMERGENCY/CRITICAL levels
+        \RuntimeException::class => 'emergency',
+        \Illuminate\Database\QueryException::class => 'emergency',
+        \TypeError::class => 'emergency',
+        \ErrorException::class => 'emergency',
         \Illuminate\Validation\ValidationException::class => 'error',
         \Symfony\Component\HttpKernel\Exception\HttpException::class => 'error',
-        \TypeError::class => 'critical',
-        \ErrorException::class => 'critical',
     ],
 
     /*
      * -------------------------------------------------------------------------
      * Throttling Configuration
      * -------------------------------------------------------------------------
-     * Settings for preventing spam notifications when errors repeat rapidly.
      */
     'throttling' => [
         'enabled' => env('ERROR_NOTIFIER_THROTTLE_ENABLED', true),
@@ -65,11 +63,14 @@ return [
      * -------------------------------------------------------------------------
      * Auto Actions Configuration
      * -------------------------------------------------------------------------
-     * Define automatic protective actions based on error severity.
      */
     'auto_actions' => [
         'maintenance_enabled' => env('ERROR_NOTIFIER_MAINTENANCE_ENABLED', true),
         'maintenance_cooldown_minutes' => 15,
         'maintenance_secret' => env('ERROR_NOTIFIER_MAINTENANCE_SECRET'),
+        'lock_key_prefix' => env('ERROR_NOTIFIER_LOCK_PREFIX', 'error-notifier:lock:'),
+        'lock_features' => [
+            'emergency' => ['test-lock-route', 'registration'],
+        ],
     ],
 ];
