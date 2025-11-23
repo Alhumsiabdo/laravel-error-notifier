@@ -17,7 +17,7 @@ class Notifier implements NotifierInterface
             return false;
         }
 
-        $response = Http::post($url, $payload);
+        $response = Http::timeout(30)->post($url, $payload);
 
         // Check for success status codes (e.g., 200, 202, 204)
         if ($response->successful()) {
