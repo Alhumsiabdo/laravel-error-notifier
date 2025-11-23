@@ -39,13 +39,11 @@ return [
      * -------------------------------------------------------------------------
      */
     'analyzers' => [
-        // Ensure high-risk items trigger the EMERGENCY/CRITICAL levels
-        \RuntimeException::class => 'emergency',
+        \RuntimeException::class => 'critical',
         \Illuminate\Database\QueryException::class => 'emergency',
-        \TypeError::class => 'emergency',
-        \ErrorException::class => 'emergency',
         \Illuminate\Validation\ValidationException::class => 'error',
         \Symfony\Component\HttpKernel\Exception\HttpException::class => 'error',
+        \Error::class => 'error',
     ],
 
     /*

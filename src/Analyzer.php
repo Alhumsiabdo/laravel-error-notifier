@@ -12,10 +12,8 @@ class Analyzer implements AnalyzerInterface
 {
     public function analyze(Throwable $exception): array
     {
-        // 1. Check for specific, known exception types (Validation, DB, HTTP)
         $analysis = $this->analyzeKnownExceptions($exception);
 
-        // 2. If not a known type, fall back to a generic analysis
         if (empty($analysis)) {
             $analysis = $this->analyzeGenericException($exception);
         }
@@ -23,38 +21,65 @@ class Analyzer implements AnalyzerInterface
         return $analysis;
     }
 
+    /**
+     * Finds the severity level configured for the given exception class.
+     */
+    protected function getLevelFromConfig(string $exceptionClass): ?string
+    {
+        return config("error-notifier.analyzers.{$exceptionClass}");
+    }
+
     protected function analyzeKnownExceptions(Throwable $e): array
     {
+        $exceptionClass = get_class($e);
+        $level = $this->getLevelFromConfig($exceptionClass);
+        if (!$level) {
+            if ($e instanceof \Error) {
+                $level = $this->getLevelFromConfig(\Error::class);
+            } elseif ($e instanceof \ErrorException) {
+                $level = $this->getLevelFromConfig(\ErrorException::class);
+            }
+        }
+        if (!$level) {
+            return [];
+        }
+
         if ($e instanceof ValidationException) {
             return [
-                'level' => 'error',
+                'level' => $level, // USES LEVEL FROM CONFIG
                 'type' => 'validation',
                 'summary' => 'Form validation failed for user input.',
                 'context' => ['errors' => $e->errors(), 'input' => request()->all()],
                 'suggestion' => 'Check validation rules and user input values.'
             ];
         }
-
         if ($e instanceof QueryException) {
             return [
-                'level' => 'critical',
+                'level' => $level,
                 'type' => 'database',
                 'summary' => 'A database query failed unexpectedly.',
                 'context' => ['sql' => $e->getSql(), 'bindings' => $e->getBindings()],
                 'suggestion' => 'Review the SQL query and ensure database connection/schema are correct.'
             ];
         }
-
         if ($e instanceof HttpException && $e->getStatusCode() >= 500) {
             return [
-                'level' => 'error',
+                'level' => $level,
                 'type' => 'http_server',
                 'summary' => 'A 5xx HTTP error occurred.',
                 'context' => ['status' => $e->getStatusCode()],
                 'suggestion' => 'Check upstream services or internal API endpoints.'
             ];
         }
-
+        if ($e instanceof \Error || $e instanceof \ErrorException) {
+            return [
+                'level' => $level,
+                'type' => 'php_fatal',
+                'summary' => "Mapped PHP Fatal Error: {$e->getMessage()}",
+                'context' => ['error_class' => $exceptionClass],
+                'suggestion' => 'Review the function call arguments for type mismatch.',
+            ];
+        }
         return [];
     }
 
@@ -62,7 +87,7 @@ class Analyzer implements AnalyzerInterface
     {
         $className = get_class($e);
         return [
-            'level' => 'emergency', // Defaulting to high severity for unhandled types
+            'level' => 'emergency',
             'type' => 'unhandled',
             'summary' => "Unhandled runtime error: {$e->getMessage()}",
             'context' => ['file' => $e->getFile(), 'line' => $e->getLine()],
