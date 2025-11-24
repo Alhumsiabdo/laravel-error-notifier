@@ -80,7 +80,15 @@ class Analyzer implements AnalyzerInterface
                 'suggestion' => 'Review the function call arguments for type mismatch.',
             ];
         }
-        return [];
+
+        // Fallback for any other exception that has a configured level but no specific handler
+        return [
+            'level' => $level,
+            'type' => 'configured_exception',
+            'summary' => "Exception: {$e->getMessage()}",
+            'context' => ['class' => $exceptionClass, 'file' => $e->getFile(), 'line' => $e->getLine()],
+            'suggestion' => 'Check the error message and stack trace.'
+        ];
     }
 
     protected function analyzeGenericException(Throwable $e): array

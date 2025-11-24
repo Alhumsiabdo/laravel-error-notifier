@@ -28,8 +28,8 @@ return [
     'levels' => [
         'emergency' => ['slack', 'telegram', 'discord'],
         'critical' => ['slack'],
-        'error' => ['slack'],
-        'warning' => [],
+        'error' => ['slack', 'telegram'],
+        'warning' => ['slack'],
         'notice' => [],
     ],
 
