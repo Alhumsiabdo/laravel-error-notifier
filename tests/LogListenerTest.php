@@ -9,7 +9,7 @@ use Mockery;
 use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\Test;
 
-class WarningNotificationTest extends TestCase
+class LogListenerTest extends TestCase
 {
     protected function getPackageProviders($app)
     {

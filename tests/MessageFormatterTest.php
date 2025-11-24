@@ -6,7 +6,7 @@ use Orchestra\Testbench\TestCase;
 use alhumsi\ErrorNotifier\MessageFormatter;
 use PHPUnit\Framework\Attributes\Test;
 
-class TelegramFormattingTest extends TestCase
+class MessageFormatterTest extends TestCase
 {
     #[Test]
     public function it_escapes_special_characters_in_telegram_fields()
