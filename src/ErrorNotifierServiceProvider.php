@@ -76,5 +76,11 @@ class ErrorNotifierServiceProvider extends ServiceProvider
 
         $router = $this->app->make(\Illuminate\Routing\Router::class);
         $router->aliasMiddleware('notifier.lock', CheckFeatureLock::class);
+
+        // Register LogListener
+        $this->app['events']->listen(
+            \Illuminate\Log\Events\MessageLogged::class,
+            [Listeners\LogListener::class, 'handle']
+        );
     }
 }

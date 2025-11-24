@@ -24,15 +24,15 @@ class MessageFormatter implements MessageFormatterInterface
 
     protected function generateMarkdown(array $report): string
     {
-        $level = strtoupper($report['level'] ?? 'UNKNOWN');
-        $type = $report['type'] ?? 'General Error';
+        $level = $this->escapeMarkdown(strtoupper($report['level'] ?? 'UNKNOWN'));
+        $type = $this->escapeMarkdown($report['type'] ?? 'General Error');
 
         // Escape summary and suggestion before embedding them
         $summary = $this->escapeMarkdown($report['summary'] ?? 'No summary available.');
         $suggestion = $this->escapeMarkdown($report['suggestion'] ?? 'No specific suggestion provided.');
 
         $timestamp = Carbon::now()->toDateTimeString();
-        $env = App::environment();
+        $env = $this->escapeMarkdown(App::environment());
 
         // FIX: Replaced list markers from '-' to '•' to avoid Telegram MarkdownV2 reserved character issue.
         $template = "🚨 *{$level}* — {$type}\n\n" .
