@@ -7,6 +7,7 @@ use alhumsi\ErrorNotifier\ErrorNotifierServiceProvider;
 use alhumsi\ErrorNotifier\Contracts\NotifierInterface;
 use Mockery;
 use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Attributes\Test;
 
 class WarningNotificationTest extends TestCase
 {
@@ -26,7 +27,7 @@ class WarningNotificationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_sends_notification_for_warning_level()
     {
         // Mock Notifier
