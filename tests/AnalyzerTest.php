@@ -7,7 +7,7 @@ use alhumsi\ErrorNotifier\Analyzer;
 use RuntimeException;
 use PHPUnit\Framework\Attributes\Test;
 
-class ReproductionTest extends TestCase
+class AnalyzerTest extends TestCase
 {
     protected function defineEnvironment($app)
     {
