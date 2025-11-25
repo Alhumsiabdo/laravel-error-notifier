@@ -22,7 +22,7 @@ class Analyzer implements AnalyzerInterface
     }
 
     /**
-     * Finds the severity level configured for the given exception class.
+     * Finds the severity levels configured for the given exception class.
      */
     protected function getLevelFromConfig(string $exceptionClass): ?string
     {
