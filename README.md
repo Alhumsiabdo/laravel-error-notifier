@@ -9,6 +9,11 @@ Laravel package for actionable error notifications (Telegram, Slack, Discord) wi
 - Maps exception types to severity levels and channels, so high-signal alerts stay actionable.
 - Ships with MarkdownV2-safe formatting plus JSON context blocks for deeper debugging.
 
+## Screenshots
+| Slack | Telegram | Discord |
+|:---:|:---:|:---:|
+| ![Slack Error](docs/images/slack_error.png) | ![Telegram Error](docs/images/telegram_error.png) | ![Discord Error](docs/images/discord_error.png) |
+
 ## Requirements
 - PHP 8.2+
 - Laravel 10.x, 11.x or 12.x (or any app relying on Illuminate components)
@@ -27,6 +32,8 @@ ERROR_NOTIFIER_SLACK_WEBHOOK=https://hooks.slack.com/services/xxx/yyy/zzz
 ERROR_NOTIFIER_TELEGRAM_BOT_TOKEN=123456:ABC
 ERROR_NOTIFIER_TELEGRAM_CHAT_ID=123456789
 ERROR_NOTIFIER_DISCORD_WEBHOOK=https://discord.com/api/webhooks/xxx/yyy
+ERROR_NOTIFIER_THROTTLE_ENABLED=true
+ERROR_NOTIFIER_MAINTENANCE_ENABLED=false
 ```
 
 > The package auto-discovers its service provider. No manual edits to `config/app.php` are necessary.
@@ -83,6 +90,35 @@ See the additional guides under `docs/`:
 composer test
 ```
 Includes an integration test (`tests/ErrorFlowTest.php`) that mocks the notifier and asserts both Slack and Telegram deliveries.
+
+## Package Structure
+```
+laravel-error-notifier/
+├── config/             # Configuration file
+├── docs/               # Additional documentation
+├── src/                # Source code
+│   ├── Console/
+│   │   └── FeatureLockCommand.php
+│   ├── Contracts/
+│   │   ├── AnalyzerInterface.php
+│   │   ├── MessageFormatterInterface.php
+│   │   └── NotifierInterface.php
+│   ├── Http/
+│   │   └── Middleware/
+│   │       └── CheckFeatureLock.php
+│   ├── Listeners/
+│   │   ├── ExceptionListener.php
+│   │   └── LogListener.php
+│   ├── Services/
+│   │   ├── FeatureLocker.php
+│   │   └── Maintainer.php
+│   ├── Analyzer.php    # Exception analyzer
+│   ├── MessageFormatter.php # Notification formatter
+│   ├── Notifier.php    # Notification sender
+│   └── Throttler.php   # Rate limiting logic
+├── tests/              # Automated tests
+└── vendor/             # Composer dependencies
+```
 
 ## Contributing
 1. Fork & clone
