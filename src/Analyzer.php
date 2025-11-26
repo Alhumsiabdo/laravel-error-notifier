@@ -18,6 +18,14 @@ class Analyzer implements AnalyzerInterface
             $analysis = $this->analyzeGenericException($exception);
         }
 
+        // Generate a unique fingerprint for this specific error occurrence
+        $analysis['fingerprint'] = md5(
+            get_class($exception) .
+            $exception->getMessage() .
+            $exception->getFile() .
+            $exception->getLine()
+        );
+
         return $analysis;
     }
 

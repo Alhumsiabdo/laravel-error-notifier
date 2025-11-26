@@ -33,6 +33,11 @@ class Throttler
 
     protected function generateKey(array $report): string
     {
+        if (isset($report['fingerprint'])) {
+            return "error-notifier:throttle:{$report['fingerprint']}";
+        }
+
+        // Fallback for backward compatibility or manual payloads
         $type = $report['type'] ?? 'unknown';
         $level = $report['level'] ?? 'emergency';
         return "error-notifier:throttle:{$level}:{$type}";
