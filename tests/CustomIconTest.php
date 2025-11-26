@@ -5,6 +5,7 @@ namespace alhumsi\ErrorNotifier\Tests;
 use Orchestra\Testbench\TestCase;
 use alhumsi\ErrorNotifier\MessageFormatter;
 use Illuminate\Support\Facades\Config;
+use PHPUnit\Framework\Attributes\Test;
 
 class CustomIconTest extends TestCase
 {
@@ -13,7 +14,7 @@ class CustomIconTest extends TestCase
         return [\alhumsi\ErrorNotifier\ErrorNotifierServiceProvider::class];
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_default_icon_when_not_configured()
     {
         Config::set('error-notifier.icons', []);
@@ -32,7 +33,7 @@ class CustomIconTest extends TestCase
         $this->assertStringContainsString('🚨', $result['blocks'][0]['text']['text']);
     }
 
-    /** @test */
+    #[Test]
     public function it_uses_custom_icon_when_configured()
     {
         Config::set('error-notifier.icons.critical', '💀');
