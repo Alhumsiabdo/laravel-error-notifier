@@ -59,3 +59,21 @@ Tip: use tools like `ngrok` or localtunnel if your bot/webhook needs to reach a 
 
 You’re done! Move on to `docs/examples.md` for concrete integration patterns.
 
+### 7. Local Package Testing
+To test this package in another local Laravel project before publishing:
+
+1.  Add a `repositories` section to the consuming project's `composer.json`:
+    ```json
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../path/to/laravel-error-notifier"
+        }
+    ],
+    ```
+2.  Require the package using `@dev`:
+    ```bash
+    composer require alhumsi/laravel-error-notifier:@dev
+    ```
+3.  Any changes you make in the package source will be immediately reflected in your test project (if symlinked correctly by Composer).
+
