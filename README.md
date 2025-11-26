@@ -61,6 +61,18 @@ $this->app->make(\Illuminate\Contracts\Debug\ExceptionHandler::class)
 - `channels`: provide the transport credentials. Telegram needs `bot_token`, `chat_id` and optional `bot_url`.
 - `levels`: severity => channels mapping. Empty arrays silence that severity.
 - `analyzers`: class => severity override, allowing priority routing for specific exceptions.
+- `icons`: severity => emoji mapping. Customize the visual indicator for each error level.
+
+### Custom Icons
+Define emojis or strings for each severity level in `config/error-notifier.php`:
+```php
+'icons' => [
+    'emergency' => '🚨',
+    'critical' => '🔥',
+    'error' => '❌',
+    // ...
+],
+```
 
 ### Custom Analyzer
 Implement `alhumsi\ErrorNotifier\Contracts\AnalyzerInterface` and bind it inside a service provider:

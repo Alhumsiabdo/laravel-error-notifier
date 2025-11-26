@@ -24,6 +24,9 @@ class MessageFormatter implements MessageFormatterInterface
 
     protected function generateMarkdown(array $report): string
     {
+        $levelName = strtolower($report['level'] ?? 'error');
+        $icon = config("error-notifier.icons.{$levelName}", '🚨');
+        
         $level = $this->escapeMarkdown(strtoupper($report['level'] ?? 'UNKNOWN'));
         $type = $this->escapeMarkdown($report['type'] ?? 'General Error');
 
@@ -35,7 +38,7 @@ class MessageFormatter implements MessageFormatterInterface
         $env = $this->escapeMarkdown(App::environment());
 
         // FIX: Replaced list markers from '-' to '•' to avoid Telegram MarkdownV2 reserved character issue.
-        $template = "🚨 *{$level}* — {$type}\n\n" .
+        $template = "{$icon} *{$level}* — {$type}\n\n" .
             "*Summary:* {$summary}\n" .
             "*Context:*\n" .
             "• *Env:* `{$env}`\n" .

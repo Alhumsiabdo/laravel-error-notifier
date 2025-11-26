@@ -27,7 +27,7 @@ return [
      */
     'levels' => [
         'emergency' => ['slack', 'telegram', 'discord'],
-        'critical' => ['slack'],
+        'critical' => ['slack', 'telegram'],
         'error' => ['slack', 'telegram'],
         'warning' => ['slack'],
         'notice' => [],
@@ -44,6 +44,22 @@ return [
         \Illuminate\Validation\ValidationException::class => 'error',
         \Symfony\Component\HttpKernel\Exception\HttpException::class => 'error',
         \Error::class => 'error',
+    ],
+
+    /*
+     * -------------------------------------------------------------------------
+     * Custom Icons
+     * -------------------------------------------------------------------------
+     * Define emojis or strings to represent each severity level.
+     */
+    'icons' => [
+        'emergency' => '🚨',
+        'critical' => '🔥',
+        'error' => '❌',
+        'warning' => '⚠️',
+        'notice' => '📝',
+        'info' => 'ℹ️',
+        'debug' => '🐛',
     ],
 
     /*
