@@ -4,7 +4,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/alhumsi/laravel-error-notifier.svg)](https://packagist.org/packages/alhumsi/laravel-error-notifier)
 [![PHP Version](https://img.shields.io/packagist/php-v/alhumsi/laravel-error-notifier.svg)](https://packagist.org/packages/alhumsi/laravel-error-notifier)
 [![License](https://img.shields.io/packagist/l/alhumsi/laravel-error-notifier.svg)](LICENSE)
-[![Tests](https://github.com/Alhumsiabdo/laravel-error-notifier/actions/workflows/tests.yml/badge.svg)](https://github.com/Alhumsiabdo/laravel-error-notifier/actions)
+[![Tests](https://github.com/Alhumsiabdo/laravel-error-notifier/actions/workflows/run-test.yml/badge.svg)](https://github.com/Alhumsiabdo/laravel-error-notifier/actions)
 
 Laravel package for actionable error notifications (Telegram, Slack, Discord) with contextual analysis and actionable suggestions.
 
