@@ -1,6 +1,6 @@
 <?php
 
-namespace Alhumsi\ErrorNotifier;
+namespace alhumsi\ErrorNotifier;
 
 use alhumsi\ErrorNotifier\Contracts\AnalyzerInterface;
 use Illuminate\Validation\ValidationException;
