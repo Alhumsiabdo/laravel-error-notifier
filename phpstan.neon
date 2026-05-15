@@ -1,0 +1,19 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - src/
+        - config/
+
+    # Start at level 5 to fix initial errors, then bump this to 7 or 8!
+    level: 5
+
+    # If your package relies on specific Laravel paths, you can define them here
+    # orchestrator: true
+
+    ignoreErrors:
+        -
+            message: "#Called 'env' outside of the config directory#"
+            path: config/error-notifier.php
